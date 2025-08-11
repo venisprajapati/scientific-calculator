@@ -1,0 +1,17 @@
+@startuml
+actor User
+participant "BetaGUI" as GUI
+participant "BetaCalculator" as Calculator
+participant "FactorialUtil" as Util
+
+User -> GUI : enters x,y and clicks Compute
+GUI -> Calculator : beta(x,y)
+Calculator -> Util : factorial(x-1)
+Util --> Calculator : value1
+Calculator -> Util : factorial(y-1)
+Util --> Calculator : value2
+Calculator -> Util : factorial(x+y-1)
+Util --> Calculator : denom
+Calculator --> GUI : betaResult
+GUI --> User : display result
+@enduml

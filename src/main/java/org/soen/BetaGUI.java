@@ -1,151 +1,223 @@
 package org.soen;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 /**
- * BetaGUI.java
-
- * A Swing-based desktop application for computing the Beta function B(x, y) "from scratch,"
- * without using any external math libraries. This class handles the user interface,
- * event-driven input processing, and displays results or error messages to the user.
-
- * Requirements addressed:
- * R1: Provides two labeled integer input fields for x and y (>0).
- * R2: Invokes BetaCalculator.beta(x, y) to compute the function.
- * R3: Validates input and shows descriptive error dialogs for invalid entries.
- * R4: Displays the result immediately in a dedicated label.
- * R5: Implements accessibility features (setLabelFor, tooltips, mnemonics).
- * R6: Separates UI logic from computation logic in BetaCalculator.
+ * Swing-based GUI for the Beta function calculator.
+ *
+ * <p>The UI is separate from computation logic in BetaCalculator.
+ * Accessibility features include associated labels, tooltips, mnemonics,
+ * and tab navigation.</p>
  */
-public class BetaGUI {
+public final class BetaGUI {
 
     /**
-     * Entry point: schedules the creation of the GUI on the Event Dispatch Thread.
-     * @param args unused
+     * Number of columns for the input text fields.
      */
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(BetaGUI::createAndShowGUI);
+    private static final int FIELD_COLUMNS = 8;
+
+    /**
+     * External padding applied to the content panel (pixels).
+     */
+    private static final int PADDING = 15;
+
+    /**
+     * Insets used between controls inside layout (pixels).
+     */
+    private static final int INSET = 10;
+
+    /**
+     * Font size (points) used for labels.
+     */
+    private static final int LABEL_FONT_SIZE = 16;
+
+    /**
+     * Font size (points) used for text fields.
+     */
+    private static final int FIELD_FONT_SIZE = 16;
+
+    /**
+     * Font size (points) used for the result label.
+     */
+    private static final int RESULT_FONT_SIZE = 18;
+
+    /**
+     * Font size (points) used for the primary button.
+     */
+    private static final int BUTTON_FONT_SIZE = 16;
+
+    /**
+     * Red component (0-255) for the success message color.
+     */
+    private static final int GREEN_R = 0;
+
+    /**
+     * Green component (0-255) for the success message color.
+     */
+    private static final int GREEN_G = 102;
+
+    /**
+     * Blue component (0-255) for the success message color.
+     */
+    private static final int GREEN_B = 0;
+
+    /**
+     * Decimal format used to display Beta function values.
+     */
+    private static final DecimalFormat DISPLAY_FORMAT =
+            new DecimalFormat("#.################");
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private BetaGUI() {
+        // Utility class - no instance
     }
 
     /**
-     * Constructs and displays the main application window.
-     * Sets up all UI components, configures layout and event handlers.
+     * Main entry point schedules GUI creation on the Event Dispatch Thread.
+     *
+     * @param args unused
      */
-    private static void createAndShowGUI() {
-        // Create main application window
-        JFrame frame = new JFrame("Beta Function Calculator");
+    public static void main(final String[] args) {
+        SwingUtilities.invokeLater(BetaGUI::createAndShowGui);
+    }
+
+    /**
+     * Builds and shows the GUI.
+     */
+    private static void createAndShowGui() {
+        final JFrame frame = new JFrame("Beta Function Calculator");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Create and configure content panel with padding
-        JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
-        contentPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        final JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(
+                PADDING, PADDING, PADDING, PADDING));
 
-        // Input panel using GridBagLayout for flexible alignment
-        JPanel inputPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
+        final JPanel inputPanel = new JPanel(new GridBagLayout());
+        final GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(INSET, INSET, INSET, INSET);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Define fonts for labels, fields, and results
-        Font labelFont = new Font("SansSerif", Font.PLAIN, 16);
-        Font fieldFont = new Font("SansSerif", Font.PLAIN, 16);
-        Font resultFont = new Font("SansSerif", Font.BOLD, 18);
+        final Font labelFont = new Font("SansSerif", Font.PLAIN,
+                LABEL_FONT_SIZE);
+        final Font fieldFont = new Font("SansSerif", Font.PLAIN,
+                FIELD_FONT_SIZE);
+        final Font resultFont = new Font("SansSerif", Font.BOLD,
+                RESULT_FONT_SIZE);
 
-        // --- Input Field for x ---
-        JLabel lblX = new JLabel("x (integer > 0):");
+        // X input
+        final JLabel lblX = new JLabel("x (integer > 0):");
         lblX.setFont(labelFont);
-        JTextField txtX = new JTextField(8);
+        final JTextField txtX = new JTextField(FIELD_COLUMNS);
         txtX.setFont(fieldFont);
-        lblX.setLabelFor(txtX);  // Accessibility: associates label with text field
+        lblX.setLabelFor(txtX);
         txtX.setToolTipText("Enter a positive integer for x");
-        lblX.setDisplayedMnemonic(KeyEvent.VK_X);  // ALT+X focuses field
+        lblX.setDisplayedMnemonic('X');
 
-        // --- Input Field for y ---
-        JLabel lblY = new JLabel("y (integer > 0):");
+        // Y input
+        final JLabel lblY = new JLabel("y (integer > 0):");
         lblY.setFont(labelFont);
-        JTextField txtY = new JTextField(8);
+        final JTextField txtY = new JTextField(FIELD_COLUMNS);
         txtY.setFont(fieldFont);
         lblY.setLabelFor(txtY);
         txtY.setToolTipText("Enter a positive integer for y");
-        lblY.setDisplayedMnemonic(KeyEvent.VK_Y);
+        lblY.setDisplayedMnemonic('Y');
 
-        // Add input components to the panel
-        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         inputPanel.add(lblX, gbc);
-        gbc.gridx = 1; gbc.gridy = 0;
+
+        gbc.gridx = 1;
         inputPanel.add(txtX, gbc);
-        gbc.gridx = 0; gbc.gridy = 1;
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
         inputPanel.add(lblY, gbc);
-        gbc.gridx = 1; gbc.gridy = 1;
+
+        gbc.gridx = 1;
         inputPanel.add(txtY, gbc);
 
-        // --- Compute Button and Result Label ---
-        JButton btnCompute = new JButton("Compute B(x, y)");
-        btnCompute.setFont(new Font("SansSerif", Font.BOLD, 16));
+        final JButton btnCompute = new JButton("Compute B(x, y)");
+        btnCompute.setFont(new Font("SansSerif", Font.BOLD,
+                BUTTON_FONT_SIZE));
         btnCompute.setToolTipText("Click to compute the Beta function");
-        btnCompute.setMnemonic(KeyEvent.VK_C);  // ALT+C activates button
+        btnCompute.setMnemonic('C');
 
-        JLabel lblResult = new JLabel("Result: —");
+        final JLabel lblResult = new JLabel("Result: \u2014");
         lblResult.setFont(resultFont);
-        lblResult.setForeground(new Color(0, 102, 0));  // Dark green for success
+        lblResult.setForeground(new java.awt.Color(
+                GREEN_R, GREEN_G, GREEN_B));
 
-        // Arrange button and result in a vertical box layout
-        JPanel resultPanel = new JPanel();
-        resultPanel.setLayout(new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
+        final JPanel resultPanel = new JPanel();
+        resultPanel.setLayout(
+                new BoxLayout(resultPanel, BoxLayout.Y_AXIS));
         btnCompute.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblResult.setAlignmentX(Component.CENTER_ALIGNMENT);
         resultPanel.add(btnCompute);
-        resultPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        resultPanel.add(Box.createRigidArea(new Dimension(0, INSET)));
         resultPanel.add(lblResult);
 
-        // Assemble main content panel
         contentPanel.add(inputPanel, BorderLayout.NORTH);
         contentPanel.add(resultPanel, BorderLayout.CENTER);
         frame.setContentPane(contentPanel);
 
-        // Wire up button action listener
-        btnCompute.addActionListener(e -> handleComputeAction(frame, txtX, txtY, lblResult));
+        btnCompute.addActionListener(e ->
+                handleComputeAction(frame, txtX, txtY, lblResult));
 
-        // Finalize window setup
         frame.pack();
-        frame.setLocationRelativeTo(null);  // Center on screen
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
-        // Set initial keyboard focus
         txtX.requestFocusInWindow();
     }
 
     /**
-     * Event handler for the "Compute" button.
-     * Parses inputs, invokes the calculator, and updates the result label or shows errors.
+     * Handles the compute button action: parses input, computes Beta,
+     * and updates the result label or shows an error dialog.
      *
-     * @param parent the parent component for error dialogs
-     * @param txtX JTextField for the x input
-     * @param txtY JTextField for the y input
-     * @param lblResult JLabel to display the computed Beta value
+     * @param parent parent frame for dialogs
+     * @param txtX text field for x input
+     * @param txtY text field for y input
+     * @param lblResult label to display results
      */
-    private static void handleComputeAction(Component parent,
-                                            JTextField txtX,
-                                            JTextField txtY,
-                                            JLabel lblResult) {
+    private static void handleComputeAction(final JFrame parent,
+                                            final JTextField txtX,
+                                            final JTextField txtY,
+                                            final JLabel lblResult) {
         try {
-            // Parse input values (R1)
-            int x = Integer.parseInt(txtX.getText().trim());
-            int y = Integer.parseInt(txtY.getText().trim());
+            final int x = Integer.parseInt(txtX.getText().trim());
+            final int y = Integer.parseInt(txtY.getText().trim());
 
-            // Compute Beta function (R2, R3)
-            double betaValue = BetaCalculator.beta(x, y);
+            final BigDecimal beta = BetaCalculator.beta(x, y);
 
-            // Display result (R4)
-            lblResult.setText(String.format("B(%d, %d) = %.6f", x, y, betaValue));
+            lblResult.setText(String.format("B(%d, %d) = %s", x, y,
+                    DISPLAY_FORMAT.format(beta)));
+
         } catch (NumberFormatException nfe) {
             showErrorDialog(parent,
                     "Please enter valid integer values for x and y.");
-        } catch (IllegalArgumentException iae) {
-            showErrorDialog(parent, iae.getMessage());
+        } catch (BetaException be) {
+            showErrorDialog(parent, be.getMessage());
         } catch (Exception ex) {
             showErrorDialog(parent,
                     "Unexpected error occurred: " + ex.getMessage());
@@ -153,12 +225,13 @@ public class BetaGUI {
     }
 
     /**
-     * Displays an error dialog with a standardized title and icon.
+     * Shows a standardized error dialog.
      *
-     * @param parent  the parent component for the dialog
-     * @param message user-friendly error message text
+     * @param parent parent frame for dialog
+     * @param message message to present the user
      */
-    private static void showErrorDialog(Component parent, String message) {
+    private static void showErrorDialog(final JFrame parent,
+                                        final String message) {
         JOptionPane.showMessageDialog(
                 parent,
                 message,

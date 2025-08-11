@@ -1,62 +1,64 @@
 package org.soen;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
+
 /**
- * BetaCalculator.java
-
- * Core computation module for the Beta function B(x,y), implemented "from scratch":
- *   B(x,y) = Γ(x)·Γ(y) / Γ(x+y)
- * where Γ(n) = (n-1)! for integer n > 0.
-
- * Requirements addressed:
- *   - R1: Validates two positive integer inputs (x, y > 0).
- *   - R2: Computes Beta function without using Math.* or external math libraries.
- *   - R3: Throws IllegalArgumentException on invalid inputs.
- *   - R5: Maintains separation of computation logic from UI code.
- *   - R6: Supports potential integration with accessibility features via UI labels.
+ * Core computation module for the Beta function B(x,y).
+ *
+ * <p>This integer-based implementation uses:
+ * B(x,y) = Gamma(x) * Gamma(y) / Gamma(x+y),
+ * where Gamma(n) = (n - 1)! for integer n > 0.</p>
  */
-public class BetaCalculator {
+public final class BetaCalculator {
 
     /**
-     * Computes the factorial of a non-negative integer n.
-     * @param n non-negative integer
-     * @return n! as a long
+     * Decimal precision used for BigDecimal division.
      */
-    private static long factorial(int n) {
-        long result = 1L;
-        for (int i = 2; i <= n; i++) {
-            result *= i;
-        }
-        return result;
+    private static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
+
+    private BetaCalculator() {
+        // Utility class - prevent instantiation
     }
 
     /**
-     * Approximates the Gamma function for integer inputs:
-     * Γ(z) = (z - 1)! for z > 0.
+     * Returns Gamma(z) for integer z > 0 using factorial identity.
+     *
      * @param z positive integer
-     * @return (z - 1)! as a long
-     * @throws IllegalArgumentException if z <= 0
+     * @return Gamma(z) as BigInteger
+     * @throws BetaException if z <= 0
      */
-    private static long gamma(int z) {
+    private static BigInteger gammaAsBigInteger(final int z) {
         if (z <= 0) {
-            throw new IllegalArgumentException("Gamma(z) requires integer z > 0");
+            throw new BetaException("Gamma(z) requires integer z > 0");
         }
-        return factorial(z - 1);
+        return FactorialUtil.factorial(z - 1);
     }
 
     /**
-     * Computes the Beta function B(x, y) = Γ(x)·Γ(y) / Γ(x + y).
-     * Only accepts positive integer parameters.
-     * @param x positive integer parameter
-     * @param y positive integer parameter
-     * @return Beta(x, y) as a double value
-     * @throws IllegalArgumentException if x <= 0 or y <= 0
+     * Computes Beta(x, y) using big-number arithmetic.
+     *
+     * @param x positive integer
+     * @param y positive integer
+     * @return Beta(x, y) as BigDecimal
+     * @throws BetaException if x <= 0 or y <= 0
      */
-    public static double beta(int x, int y) {
+    public static BigDecimal beta(final int x, final int y) {
         if (x <= 0 || y <= 0) {
-            throw new IllegalArgumentException("x and y must be positive integers");
+            throw new BetaException("x and y must be positive integers");
         }
-        long numerator = gamma(x) * gamma(y);
-        long denominator = gamma(x + y);
-        return (double) numerator / denominator;
+
+        final BigInteger gammaX = gammaAsBigInteger(x);
+        final BigInteger gammaY = gammaAsBigInteger(y);
+        final BigInteger gammaSum = gammaAsBigInteger(x + y);
+
+        final BigInteger numerator = gammaX.multiply(gammaY);
+        final BigInteger denominator = gammaSum;
+
+        final BigDecimal numDecimal = new BigDecimal(numerator);
+        final BigDecimal denDecimal = new BigDecimal(denominator);
+
+        return numDecimal.divide(denDecimal, MATH_CONTEXT);
     }
 }

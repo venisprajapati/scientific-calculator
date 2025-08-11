@@ -1,0 +1,11 @@
+@startuml
+node "User Desktop" {
+  artifact "Java 11+" as JRE
+  component "BetaApp.jar" as App
+  App --> JRE
+}
+cloud "GitHub" {
+  artifact "ProjectEternity-BetaFunction" as Repo
+}
+App --> Repo : "pull updates (git)"
+@enduml

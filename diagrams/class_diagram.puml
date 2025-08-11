@@ -1,0 +1,23 @@
+@startuml
+package "app" {
+  class BetaCalculator {
+    +static BigDecimal beta(int x, int y)
+    -static BigInteger gammaAsBigInteger(int z)
+  }
+
+  class FactorialUtil {
+    +static BigInteger factorial(int n)
+  }
+
+  class BetaController
+  class BetaGUI {
+    +static void main(String[] args)
+  }
+
+  class BetaException
+
+  BetaCalculator --> FactorialUtil : uses
+  BetaGUI --> BetaCalculator : invokes
+  BetaGUI ..> BetaException : catches
+}
+@enduml
